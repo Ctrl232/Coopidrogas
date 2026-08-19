@@ -169,7 +169,7 @@ export default function Home() {
           to="/login"
           className="bg-[#1a1a4e] hover:bg-[#12123a] text-white font-semibold px-6 py-3 rounded-lg"
         >
-          Ingresa al LOGIN
+          Ingresa a SIP
         </Link>
       </section>
 

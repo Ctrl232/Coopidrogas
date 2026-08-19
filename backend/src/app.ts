@@ -9,6 +9,7 @@ import authRoutes from './modules/auth/auth.routes.js';
 import healthRoutes from './modules/health/health.routes.js';
 import categoryRoutes from './modules/catalog/category.routes.js';
 import productRoutes from './modules/catalog/product.routes.js';
+import inventoryRoutes from './modules/catalog/inventory.routes.js';
 
 // app.ts solo compone middlewares y rutas
 export function createApp() {
@@ -28,6 +29,7 @@ export function createApp() {
   app.use('/api/auth', authRoutes);
   app.use('/api/categories', categoryRoutes);
   app.use('/api/products', productRoutes);
+  app.use('/api/inventory', inventoryRoutes);
 
 
   app.use((req, res) => {
