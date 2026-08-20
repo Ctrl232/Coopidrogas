@@ -1,75 +1,74 @@
-# React + TypeScript + Vite
+# Coopidrogas — Backend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+API REST para el sistema de e-commerce de Coopidrogas. Proyecto de práctica técnica.
 
-Currently, two official plugins are available:
+## Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Runtime**: Node.js 22 + TypeScript 5.9
+- **Framework**: Express 5
+- **Base de datos**: MySQL 9 + Prisma 7 (driver adapter `@prisma/adapter-mariadb`)
+- **Auth**: JWT (access token + refresh token con rotación)
+- **Validación**: Zod
+- **Testing**: Jest + Supertest
 
-## React Compiler
+## Arquitectura
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Cada módulo de negocio (`auth`, `catalog`, `orders`) sigue la misma estructura en capas:
+routes.ts → define endpoints y aplica middlewares
+controller.ts → traduce HTTP ↔ service (sin lógica de negocio)
+service.ts → lógica de negocio + acceso a datos (sin conocer Express)
+schema.ts → validación de entrada con Zod
 
-## Expanding the ESLint configuration
+Middlewares transversales (`src/middlewares/`): manejo de errores centralizado, autenticación JWT, autorización por rol, y validación genérica.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Setup local
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+1. Instalar dependencias:
+   \`\`\`bash
+   npm install
+   \`\`\`
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+2. Copiar variables de entorno:
+   \`\`\`bash
+   cp .env.example .env
+   \`\`\`
+   Y completar `DATABASE_URL` con tu conexión de MySQL.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+3. Aplicar migraciones y generar el cliente de Prisma:
+   \`\`\`bash
+   npx prisma migrate dev
+   \`\`\`
 
-```
+4. (Opcional) Poblar datos base — crea un usuario admin, una categoría y una sede:
+   \`\`\`bash
+   npm run seed
+   \`\`\`
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+5. Levantar el servidor en modo desarrollo:
+   \`\`\`bash
+   npm run dev
+   \`\`\`
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Scripts
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+| Comando | Qué hace |
+|---|---|
+| `npm run dev` | Servidor en modo desarrollo (hot reload con `tsx`) |
+| `npm run build` | Compila TypeScript a `dist/` |
+| `npm start` | Corre el build de producción |
+| `npm test` | Corre la suite de tests (Jest) |
+| `npm run seed` | Pobla la BD con datos base |
 
-```
+## Módulos
+
+- **Auth** (`/api/auth`): registro, login, refresh token, logout, sesión actual
+- **Catálogo** (`/api/categories`, `/api/products`): CRUD de categorías y productos, búsqueda + paginación
+- **Inventario** (`/api/inventory`): gestión de sedes y stock por sede, ajustes atómicos
+- **Pedidos** (`/api/orders`): creación transaccional (valida stock, descuenta, calcula total), historial por usuario
+
+## Decisiones técnicas relevantes
+
+- **Access token corto (15min) + refresh token largo (7 días) con rotación**: minimiza la ventana de exposición si un token es robado.
+- **Creación de pedidos dentro de `prisma.$transaction`**: garantiza que la verificación de stock, el descuento de inventario y la creación del pedido ocurran como una sola operación atómica.
+- **Snapshot de precio en `OrderItem.unitPrice`**: el historial de pedidos no se ve afectado si el precio del producto cambia después.
+- **Soft delete en productos**: se desactivan (`isActive: false`) en vez de borrarse, preservando la integridad de pedidos históricos.
