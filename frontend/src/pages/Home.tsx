@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import buildingImg from '../assets/BACKGROUND-IMG NUESTRO PROPÓSITO.svg'; 
 
 // ---------- Tipos ----------
 type Slide = {
@@ -15,7 +16,12 @@ type Partner = {
   logo: string;
 };
 
-// ---------- Datos (reemplaza rutas por tus imágenes reales) ----------
+type Stat = {
+  value: string;
+  label: string;
+};
+
+// ---------- Datos ----------
 const slides: Slide[] = [
   { id: 1, img: 'src/assets/Banner-principal-home-Desktop-ComunicadoColombia-1550x930px-12-08-2026.jpg', alt: 'Miles de droguerías en Colombia' },
   { id: 2, img: 'src/assets/Banner-principal-home-Desktop-01-07-2026.jpg', alt: 'En Colombia nos unimos por el bienestar de todos' },
@@ -28,6 +34,13 @@ const partners: Partner[] = [
   { name: 'ICOM', logo: 'src/assets/logo-icompharma.jpeg' },
   { name: 'Corpidroguistas', logo: 'src/assets/corpidroguistas-logo.png' },
   { name: 'Fundación Coopi', logo: 'src/assets/Fundecopi-logo-sombras.png' },
+];
+
+const stats: Stat[] = [
+  { value: '+6700', label: 'Asociados' },
+  { value: '+32', label: 'Departamentos' },
+  { value: '+10000', label: 'Droguerías' },
+  { value: '+816', label: 'Municipios' },
 ];
 
 // ---------- Carrusel tipo "coverflow" ----------
@@ -53,7 +66,7 @@ function Carousel() {
   };
 
   return (
-    <div className="relative max-w-5xl mx-auto mt-8 h-[420px] flex items-center justify-center [perspective:1200px]">
+    <div className="relative max-w-[1600px] w-full mx-auto mt-8 h-[560px] flex items-center justify-center [perspective:1200px]">
       <button
         onClick={prev}
         className="absolute left-2 z-20 text-3xl text-gray-500 hover:text-[#1a1a4e]"
@@ -69,10 +82,10 @@ function Carousel() {
 
           const style: React.CSSProperties = {
             transform: `
-              translateX(${offset * 55}%)
-              translateZ(${isActive ? 0 : -200}px)
+              translateX(${offset * 70}%)
+              translateZ(${isActive ? 0 : -250}px)
               rotateY(${offset * -25}deg)
-              scale(${isActive ? 1 : 0.8})
+              scale(${isActive ? 1 : 0.75})
             `,
             opacity: Math.abs(offset) > 1 ? 0 : isActive ? 1 : 0.5,
             zIndex: isActive ? 10 : 5 - Math.abs(offset),
@@ -82,7 +95,7 @@ function Carousel() {
           return (
             <div
               key={slide.id}
-              className="absolute w-[70%] max-w-[600px] rounded-2xl overflow-hidden shadow-xl cursor-pointer"
+              className="absolute w-[68%] max-w-[850px] h-[500px] rounded-2xl overflow-hidden shadow-xl cursor-pointer"
               style={style}
               onClick={() => setCurrent(index)}
             >
@@ -117,12 +130,60 @@ function Carousel() {
   );
 }
 
+// ---------- Sección "Conoce acerca de nuestra esencia" ----------
+function AboutSection() {
+  return (
+    <section className="max-w-6xl mx-auto mt-24 px-4 grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
+      {/* Columna izquierda: texto */}
+      <div>
+        <h2 className="text-3xl font-bold text-[#1a1a4e]">
+          Conoce acerca de <span className="font-extrabold">nuestra esencia</span>
+        </h2>
+
+        <p className="mt-4 text-gray-600 leading-relaxed">
+          Estamos donde nos necesitas, trabajando para hacer la vida mejor.
+        </p>
+
+        <p className="mt-4 text-gray-600 leading-relaxed">
+          Coopidrogas, la red de droguistas detallistas más grande de Colombia.
+        </p>
+
+        {/* Grid de estadísticas */}
+        <div className="mt-8 grid grid-cols-2 gap-3 max-w-md">
+          {stats.map((stat) => (
+            <div
+              key={stat.label}
+              className="bg-gray-100 rounded-lg px-4 py-3 flex items-center gap-2"
+            >
+              <span className="text-amber-500 font-bold text-lg">{stat.value}</span>
+              <span className="text-[#1a1a4e] text-sm font-medium">{stat.label}</span>
+            </div>
+          ))}
+        </div>
+
+        <button className="mt-8 bg-amber-400 hover:bg-amber-500 text-[#1a1a4e] font-semibold px-6 py-3 rounded-full">
+          Conoce más
+        </button>
+      </div>
+
+      {/* Columna derecha: imagen */}
+      <div className="rounded-2xl overflow-hidden shadow-lg">
+        <img
+          src={buildingImg}
+          alt="Sede de Coopidrogas"
+          className="w-full h-full object-cover"
+        />
+      </div>
+    </section>
+  );
+}
+
 // ---------- Banner de aliados en loop continuo ----------
 function PartnersBanner() {
   const loopPartners: Partner[] = [...partners, ...partners];
 
   return (
-    <section className="max-w-5xl mx-auto mt-16 bg-white border rounded-xl py-6 overflow-hidden">
+    <section className="max-w-[1600px] w-full mx-auto mt-16 bg-white border rounded-xl py-6 overflow-hidden">
       <div className="flex w-max animate-marquee gap-16">
         {loopPartners.map((p: Partner, i: number) => (
           <img
@@ -153,25 +214,29 @@ function PartnersBanner() {
 // ---------- Página principal ----------
 export default function Home() {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-gray-50">
       <Navbar />
 
-      {/* Carrusel principal */}
-      <Carousel />
+      <main className="flex-1">
+        {/* Carrusel principal */}
+        <Carousel />
 
-      {/* Aliados en banner continuo */}
-      <PartnersBanner />
+        {/* Aliados en banner continuo */}
+        <PartnersBanner />
 
-      {/* CTA de login */}
-      <section className="max-w-5xl mx-auto mt-16 mb-16 flex flex-col sm:flex-row items-center justify-between gap-4 px-4">
-        <h2 className="text-2xl font-bold text-[#1a1a4e]">Sistema de Integración y Promoción</h2>
-        <Link
-          to="/login"
-          className="bg-[#1a1a4e] hover:bg-[#12123a] text-white font-semibold px-6 py-3 rounded-lg"
-        >
-          Ingresa a SIP
-        </Link>
-      </section>
+        {/* CTA de login */}
+        <section className="max-w-5xl mx-auto mt-16 mb-16 flex flex-col sm:flex-row items-center justify-between gap-4 px-4">
+          <h2 className="text-2xl font-bold text-[#1a1a4e]">Sistema de Integración y Promoción</h2>
+          <Link
+            to="/login"
+            className="bg-[#1a1a4e] hover:bg-[#12123a] text-white font-semibold px-6 py-3 rounded-lg"
+          >
+            Ingresa a SIP
+          </Link>
+        </section>
+        {/* Conoce acerca de nuestra esencia */}
+        <AboutSection />
+      </main>
 
       <Footer />
     </div>
