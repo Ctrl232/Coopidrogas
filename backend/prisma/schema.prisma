@@ -34,6 +34,7 @@ model User {
   updatedAt    DateTime @updatedAt @map("updated_at")
 
   refreshTokens RefreshToken[]
+  orders Order[]
 
   @@index([email])
   @@map("users")
@@ -76,7 +77,8 @@ model Product {
   updatedAt   DateTime  @updatedAt @map("updated_at")
 
   inventory   InventoryItem[]
-
+  orderItems  OrderItem[]
+  
   @@index([categoryId])
   @@index([name])
   @@map("products")
@@ -89,6 +91,7 @@ model Branch {
   isActive  Boolean   @default(true) @map("is_active")
 
   inventory InventoryItem[]
+  orders    Order[]
 
   @@map("branches")
 }
@@ -105,4 +108,42 @@ model InventoryItem {
   @@unique([productId, branchId])
   @@index([branchId])
   @@map("inventory_items")
+}
+
+enum OrderStatus {
+  PENDIENTE
+  CONFIRMADO
+  ENVIADO
+  ENTREGADO
+  CANCELADO
+}
+
+model Order {
+  id        String      @id @default(uuid())
+  userId    String      @map("user_id")
+  user      User        @relation(fields: [userId], references: [id])
+  branchId  Int         @map("branch_id")
+  branch    Branch      @relation(fields: [branchId], references: [id])
+  status    OrderStatus @default(PENDIENTE)
+  total     Decimal     @db.Decimal(10, 2)
+  items     OrderItem[]
+  createdAt DateTime    @default(now()) @map("created_at")
+  updatedAt DateTime    @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@index([status])
+  @@map("orders")
+}
+
+model OrderItem {
+  id        String  @id @default(uuid())
+  orderId   String  @map("order_id")
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String  @map("product_id")
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int
+  unitPrice Decimal @map("unit_price") @db.Decimal(10, 2)
+
+  @@index([orderId])
+  @@map("order_items")
 }
